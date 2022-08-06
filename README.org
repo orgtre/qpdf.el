@@ -4,3 +4,10 @@ A [[https://github.com/magit/transient][transient]] Emacs wrapper for [[https://
 
 To use it you hence need Emacs, transient, pdf-tools, and qpdf. Linux and Windows binaries for qpdf are available [[https://github.com/qpdf/qpdf/releases][here]]; a homebrew formula for macOS is [[https://formulae.brew.sh/formula/qpdf][here]] (=brew install qpdf=).
 
+To install and setup with [[https://github.com/radian-software/straight.el][straight.el]] I use the following:
+#+begin_src elisp
+(use-package qpdf.el
+  :after pdf-tools
+  :straight (:host github :repo "orgtre/qpdf.el")
+  :commands qpdf)
+#+end_src
