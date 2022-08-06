@@ -20,6 +20,20 @@
   :group 'qpdf.el
   :type 'string)
 
+(defcustom qpdf-pages-prepromt
+  "Synatax: 'file [--password=password] [page-range] [...] --'.
+If only one file, 'file' and ' --' can also be omitted.
+Example page-ranges: '1,6-10,4,2,30-20,r3-z', '1-9:even', '1,4,5:odd'.\n"
+  "Extra syntax explanations shown before the --pages custom prompt."
+  :group 'qpdf.el
+  :type 'string)
+
+(defcustom qpdf-custom-prepromt
+  "List any options exactly as one would in the command line.\n"
+  "Extra syntax explanations shown before the --custom prompt."
+  :group 'qpdf.el
+  :type 'string)
+
 
 ;;;###autoload
 (transient-define-prefix qpdf ()
@@ -33,7 +47,7 @@ for details on the --pages argument and others."
    ("r" "replace input" "--replace-input")
    ("o" "outfile" "--outfile=" qpdf--read-outfile)
    (qpdf--flatten-annotations)
-   ("c" "custom" "--custom=" read-string)]
+   ("c" "custom" "--custom=" qpdf--read-custom)]
   [["Actions"
     ("<return>" " qpdf-run" qpdf-run)]
    [""
@@ -135,7 +149,8 @@ for details on the --pages argument and others."
 		       (concat ". " (number-to-string current-page) " --"))
 		      ((equal choice 'custom)
 		       ;; allow omitting ". " and " --"
-		       (let ((instring (read-string prompt
+		       (let ((instring (read-string
+					(concat qpdf-pages-prepromt prompt)
 						    initial-input history)))
 			 (unless (string-match-p
 				  "^\\(\\.\\|.*[\\.pdf]\\)" instring)
@@ -150,6 +165,12 @@ for details on the --pages argument and others."
 (defun qpdf--read-outfile (prompt _initial-input _history)
   "Read an outfile."
   (file-truename (read-file-name prompt)))
+
+
+(defun qpdf--read-custom (prompt initial-input history)
+  "Read custom options."
+  (read-string (concat qpdf-custom-prepromt prompt)
+	       initial-input history))
 
 
 (defun qpdf--make-unique-filename (filename)
