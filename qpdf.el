@@ -3,7 +3,8 @@
 ;;; Commentary:
 
 ;; This requires that qpdf is installed and in your path.
-
+;; Linux/Windows: https://github.com/qpdf/qpdf/releases/
+;; MacOS: https://formulae.brew.sh/formula/qpdf
 
 (require 'transient)
 (require 'pdf-info)
