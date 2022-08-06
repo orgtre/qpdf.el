@@ -21,6 +21,7 @@ for details on the --pages argument and others."
    ("p" "pages" "--pages=" qpdf--read-pages)
    ("r" "replace input" "--replace-input")
    ("o" "outfile" "--outfile=" qpdf--read-outfile)
+   (qpdf--flatten-annotations)
    ("c" "custom" "--custom=" read-string)]
   ["Actions"
    ("<return>" " qpdf-run" qpdf-run)]
@@ -36,6 +37,16 @@ for details on the --pages argument and others."
   (oset obj value `(,(concat "--outfile="
 			     (qpdf--make-unique-filename
 			      (file-truename "qpdf-outfile.pdf"))))))
+
+
+(transient-define-argument qpdf--flatten-annotations ()
+  "Set up the --flatten-annotations argument as a switch."
+  :description "flatten"
+  :class 'transient-switches
+  :key "f"
+  :argument-format "--flatten-annotations=%s"
+  :argument-regexp "\\(screen\\|print\\|all\\)"
+  :choices '("screen" "print" "all"))
 
 
 (defun qpdf-run (&optional args)
