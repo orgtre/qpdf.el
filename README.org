@@ -1,0 +1,6 @@
+* qpdf.el
+
+A [[https://github.com/magit/transient][transient]] Emacs wrapper for [[https://github.com/qpdf/qpdf][qpdf]] for use with [[https://github.com/vedang/pdf-tools][pdf-tools]].
+
+To use it you hence need Emacs, transient, pdf-tools, and qpdf. Linux and Windows binaries for qpdf are available [[https://github.com/qpdf/qpdf/releases][here]]; a homebrew formula for macOS is [[https://formulae.brew.sh/formula/qpdf][here]] (=brew install qpdf=).
+
