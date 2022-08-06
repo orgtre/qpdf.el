@@ -10,6 +10,17 @@
 (require 'pdf-info)
 (require 'pdf-view)
 
+
+(defgroup qpdf.el nil
+  "A transient Emacs wrapper for qpdf."
+  :group 'multimedia)
+
+(defcustom qpdf-docs-url "https://qpdf.readthedocs.io/en/stable/cli.html"
+  "The url used by `qpdf-docs'."
+  :group 'qpdf.el
+  :type 'string)
+
+
 ;;;###autoload
 (transient-define-prefix qpdf ()
   "Transient dispatcher for the qpdf shell command.
@@ -23,8 +34,11 @@ for details on the --pages argument and others."
    ("o" "outfile" "--outfile=" qpdf--read-outfile)
    (qpdf--flatten-annotations)
    ("c" "custom" "--custom=" read-string)]
-  ["Actions"
-   ("<return>" " qpdf-run" qpdf-run)]
+  [["Actions"
+    ("<return>" " qpdf-run" qpdf-run)]
+   [""
+    ("h" "qpdf-docs"
+     qpdf-docs :transient t)]]
   (interactive)
   (if (equal major-mode 'pdf-view-mode)
       (transient-setup 'qpdf)
@@ -82,6 +96,12 @@ for details on the --pages argument and others."
 	    (pdf-view-midnight-minor-mode)))))))
 
 
+(defun qpdf-docs (&optional args)
+  "Open the qpdf online documentation using `browse-url'."
+  (interactive (list (transient-args transient-current-command)))
+  (browse-url qpdf-docs-url))
+
+
 (defun qpdf--read-pages (prompt initial-input history)
   "Read a page range while providing some presets based on current page."
   (let* ((current-page (pdf-view-current-page))
@@ -98,7 +118,8 @@ for details on the --pages argument and others."
 	   (mapcar #'car options)))
 	 (choice (nth 2 (assoc choice-char options)))
 	 (pages (cond ((equal choice 'from-current)
-		       (concat ". " (number-to-string current-page) "-z" " --"))
+		       (concat ". " (number-to-string current-page)
+			       "-z" " --"))
 		      ((equal choice 'until-current)
 		       (concat ". 1-" (number-to-string current-page) " --"))
 		      ((equal choice 'except-current)
@@ -114,8 +135,10 @@ for details on the --pages argument and others."
 		       (concat ". " (number-to-string current-page) " --"))
 		      ((equal choice 'custom)
 		       ;; allow omitting ". " and " --"
-		       (let ((instring (read-string prompt initial-input history)))
-			 (unless (string-match-p "^\\(\\.\\|.*[\\.pdf]\\)" instring)
+		       (let ((instring (read-string prompt
+						    initial-input history)))
+			 (unless (string-match-p
+				  "^\\(\\.\\|.*[\\.pdf]\\)" instring)
 			   (setq instring (concat ". " instring)))
 			 (unless (string-match-p " --$" instring)
 			   (setq instring (concat instring " --")))
