@@ -165,8 +165,16 @@ Argument `args' contains the transient-args passed down from `qpdf'."
 
 (defun qpdf--read-pages-without-presets (prompt initial-input history)
   "Read a page range without providing presets based on current page."
-  (read-string (concat qpdf-pages-prepromt prompt)
-	       initial-input history))
+  ;; allow omitting ". " and " --"
+  (let ((instring (read-string
+		   (concat qpdf-pages-prepromt prompt)
+		   initial-input history)))
+    (unless (string-match-p
+	     "^\\(\\.\\|.*[\\.pdf]\\)" instring)
+      (setq instring (concat ". " instring)))
+    (unless (string-match-p " --$" instring)
+      (setq instring (concat instring " --")))
+    instring))
 
 
 (defun qpdf--read-pages-with-presets (prompt initial-input history)
