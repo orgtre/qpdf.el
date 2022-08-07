@@ -7,8 +7,6 @@
 ;; MacOS: https://formulae.brew.sh/formula/qpdf
 
 (require 'transient)
-(require 'pdf-info)
-(require 'pdf-view)
 
 
 (defgroup qpdf.el nil
@@ -34,38 +32,62 @@ Example page-ranges: '1,6-10,4,2,30-20,r3-z', '1-9:even', '1,4,5:odd'.\n"
   :group 'qpdf.el
   :type 'string)
 
+(defcustom qpdf-read-pages-function 'qpdf--default-read-pages-function
+  "Function used to read the `--pages=' argument.
+Should take three arguments: prompt initial-input history and output a string."
+  :group 'qpdf.el
+  :type 'symbol)
+
+(defcustom qpdf-run-after-functions '(qpdf--default-run-after-function)
+  "List of functions to call after the qpdf shell command has been run.
+Each should take one argument, the transient-args passed down from `qpdf'."
+  :group 'qpdf.el
+  :type 'list)
+
+(defcustom qpdf-default-outfile "qpdf-outfile.pdf"
+  "Name for the default outfile."
+  :group 'qpdf.el
+  :type 'string)
+
 
 ;;;###autoload
 (transient-define-prefix qpdf ()
   "Transient dispatcher for the qpdf shell command.
 See URL `https://qpdf.readthedocs.io/en/stable/cli.html#page-selection'
 for details on the --pages argument and others."  
-  :init-value 'qpdf--dispatch-init
+  :init-value 'qpdf--defaults
   :transient-non-suffix 'transient--do-stay
   :incompatible '(("--replace-input" "--outfile="))
   ["Arguments"
    ("p" "pages" "--pages=" qpdf--read-pages)
+   ("i" "infile" "--infile=" qpdf--read-file)
+   ("o" "outfile" "--outfile=" qpdf--read-file)
    ("r" "replace input" "--replace-input")
-   ("o" "outfile" "--outfile=" qpdf--read-outfile)
    (qpdf--flatten-annotations)
    ("c" "custom" "--custom=" qpdf--read-custom)]
   [["Actions"
     ("<return>" " qpdf-run" qpdf-run)]
    [""
     ("h" "qpdf-docs"
-     qpdf-docs :transient t)]]
-  (interactive)
-  (if (equal major-mode 'pdf-view-mode)
-      (transient-setup 'qpdf)
-    (error "Not in pdf-view-mode.")))
+     qpdf-docs :transient t)]])
 
 
 ;;;###autoload
-(defun qpdf--dispatch-init (obj)
+(defun qpdf--defaults (obj)
   "Set dynamic initial values for `qpdf'."
-  (oset obj value `(,(concat "--outfile="
+  (oset obj value `(,(if (equal major-mode 'pdf-view-mode)
+			 (concat "--pages="				 
+				 (concat ". " (number-to-string
+					       (image-mode-window-get 'page))
+					 " --")
+			       nil))
+		    ,(concat "--infile="
+			     (if (equal major-mode 'pdf-view-mode)
+				 (pdf-view-buffer-file-name)
+			       "--empty"))
+		    ,(concat "--outfile="
 			     (qpdf--make-unique-filename
-			      (file-truename "qpdf-outfile.pdf"))))))
+			      (file-truename qpdf-default-outfile))))))
 
 
 (transient-define-argument qpdf--flatten-annotations ()
@@ -81,14 +103,16 @@ for details on the --pages argument and others."
 (defun qpdf-run (&optional args)
   "Run shell command qpdf taking `ARGS' from `qpdf' transient."
   (interactive (list (transient-args transient-current-command)))
-  (let ((infile (pdf-view-buffer-file-name))
+  (let ((infile (transient-arg-value "--infile=" args))
 	(pages (transient-arg-value "--pages=" args))
 	(replace-input (transient-arg-value "--replace-input" args))
-	(outfile (transient-arg-value "--outfile=" args)))
+	(outfile (transient-arg-value "--outfile=" args))
+	options)
     (unless (or outfile replace-input)
       (error "Must specify either outfile or --replace-input."))
-    (setq args (seq-difference args (list (concat "--outfile=" outfile))))
-    ;; (print args)
+    (setq options
+	  (seq-difference args (list (concat "--outfile=" outfile)
+				     (concat "--infile=" infile))))
     (let ((call (concat "qpdf" " " infile " "
 			(mapconcat
 			 (lambda (x)
@@ -96,19 +120,29 @@ for details on the --pages argument and others."
 			    "^--custom=" ""
 			    (replace-regexp-in-string
 			     "^--pages=" "--pages " x)))
-			 args
+			 options
 			 " ")
 			" " outfile)))
       (message "call: %s" call)
       (call-process-shell-command call))
-    (if replace-input
-	(revert-buffer t t)
-      (if (not (file-exists-p outfile))
-	  (error "Cannot find outfile.")
-	(let ((dark pdf-view-midnight-minor-mode))
-	  (find-file outfile)
-	  (when dark
-	    (pdf-view-midnight-minor-mode)))))))
+    (mapcar (lambda (f) (funcall f args))
+	    qpdf-run-after-functions)))
+
+
+(defun qpdf--default-run-after-function (args)
+  "Default function to call after the `qpdf' shell command has been run.
+Argument `args' contains the transient-args passed down from `qpdf'."
+  (let ((replace-input (transient-arg-value "--replace-input" args))
+	(outfile (transient-arg-value "--outfile=" args)))
+    (when (equal major-mode 'pdf-view-mode)
+	(if replace-input
+	    (revert-buffer t t)
+	  (if (not (file-exists-p outfile))
+	      (error "Cannot find outfile.")
+	    (let ((dark pdf-view-midnight-minor-mode))
+	      (find-file outfile)
+	      (when dark
+		(pdf-view-midnight-minor-mode))))))))
 
 
 (defun qpdf-docs (&optional args)
@@ -118,12 +152,29 @@ for details on the --pages argument and others."
 
 
 (defun qpdf--read-pages (prompt initial-input history)
+  "Calls `qpdf-read-pages-function'."
+  (funcall qpdf-read-pages-function prompt initial-input history))
+
+
+(defun qpdf--default-read-pages-function (prompt initial-input history)
+  "Read a page range conditionally providing presets."
+  (if (equal major-mode 'pdf-view-mode)
+      (qpdf--read-pages-with-presets prompt initial-input history)
+    (qpdf--read-pages-without-presets prompt initial-input history)))
+
+
+(defun qpdf--read-pages-without-presets (prompt initial-input history)
+  "Read a page range without providing presets based on current page."
+  (read-string (concat qpdf-pages-prepromt prompt)
+	       initial-input history))
+
+
+(defun qpdf--read-pages-with-presets (prompt initial-input history)
   "Read a page range while providing some presets based on current page."
-  (let* ((current-page (pdf-view-current-page))
+  (let* ((current-page (image-mode-window-get 'page))
 	 (options `((?f "from current" from-current)
 		    (?u "until current" until-current)
 		    (?e "except current" except-current)
-		    (?o "only current" only-current)
 		    (?c "custom" custom)))
 	 (choice-char             
 	  (read-char-choice 
@@ -146,8 +197,6 @@ for details on the --pages argument and others."
 					"," 
 					(number-to-string (+ current-page 1))
 					"-z --"))))
-		      ((equal choice 'only-current)
-		       (concat ". " (number-to-string current-page) " --"))
 		      ((equal choice 'custom)
 		       ;; allow omitting ". " and " --"
 		       (let ((instring (read-string
@@ -163,8 +212,8 @@ for details on the --pages argument and others."
     pages))
 
 
-(defun qpdf--read-outfile (prompt _initial-input _history)
-  "Read an outfile."
+(defun qpdf--read-file (prompt _initial-input _history)
+  "Read a file."
   (file-truename (read-file-name prompt)))
 
 
