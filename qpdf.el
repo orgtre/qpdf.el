@@ -41,6 +41,7 @@ Example page-ranges: '1,6-10,4,2,30-20,r3-z', '1-9:even', '1,4,5:odd'.\n"
 See URL `https://qpdf.readthedocs.io/en/stable/cli.html#page-selection'
 for details on the --pages argument and others."  
   :init-value 'qpdf--dispatch-init
+  :transient-non-suffix 'transient--do-stay
   :incompatible '(("--replace-input" "--outfile="))
   ["Arguments"
    ("p" "pages" "--pages=" qpdf--read-pages)
