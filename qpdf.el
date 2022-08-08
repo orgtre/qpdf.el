@@ -13,6 +13,13 @@
   "A transient Emacs wrapper for qpdf."
   :group 'multimedia)
 
+(defcustom qpdf-transient-non-suffix 'transient--do-stay
+  "Function which controls behavior when keys not part of transient are presed.
+With `transient--do-stay' run the bound commands while persisting the
+transient. Set to nil to do nothing but show a message."
+  :group 'qpdf.el
+  :type 'symbol)
+  
 (defcustom qpdf-docs-url "https://qpdf.readthedocs.io/en/stable/cli.html"
   "The url used by `qpdf-docs'."
   :group 'qpdf.el
@@ -62,7 +69,7 @@ Each should take one argument, the transient-args passed down from `qpdf'."
 See URL `https://qpdf.readthedocs.io/en/stable/cli.html#page-selection'
 for details on the --pages argument and others."
   :init-value 'qpdf--set-defaults
-  :transient-non-suffix 'transient--do-stay
+  :transient-non-suffix 'qpdf-transient-non-suffix
   :incompatible '(("--replace-input" "--outfile="))
   ["Arguments"
    ("p" "pages" "--pages=" qpdf--read-pages)
@@ -74,8 +81,7 @@ for details on the --pages argument and others."
   [["Actions"
     ("<return>" " qpdf-run" qpdf-run)]
    [""
-    ("h" "qpdf-docs"
-     qpdf-docs :transient t)]])
+    ("h" "qpdf-docs" qpdf-docs :transient t)]])
 
 
 ;;;###autoload
@@ -121,7 +127,6 @@ should contain exactly what one would enter in the command line, e.g.
 '--pages=', '--infile=', '--outfile=', and '--custom=', which are modified to
 fit the qpdf signature."
   (interactive (list (transient-args transient-current-command)))
-  (print args)
   (let ((pages (transient-arg-value "--pages=" args))
 	(infile (transient-arg-value "--infile=" args))
 	(outfile (transient-arg-value "--outfile=" args))
