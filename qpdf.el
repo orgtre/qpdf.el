@@ -60,7 +60,7 @@ Each should take one argument, the transient-args passed down from `qpdf'."
 (transient-define-prefix qpdf ()
   "Transient dispatcher for the qpdf shell command.
 See URL `https://qpdf.readthedocs.io/en/stable/cli.html#page-selection'
-for details on the --pages argument and others."  
+for details on the --pages argument and others."
   :init-value 'qpdf--set-defaults
   :transient-non-suffix 'transient--do-stay
   :incompatible '(("--replace-input" "--outfile="))
@@ -111,12 +111,21 @@ for details on the --pages argument and others."
 
 
 (defun qpdf-run (&optional args)
-  "Run shell command qpdf taking `ARGS' from `qpdf' transient."
+  "Run shell command qpdf.
+If called interactively `ARGS' are taken from `transient-current-command`, which
+typically is `qpdf'. If called non-interactively `ARGS' should be a list of
+strings containing qpdf command-line options and their values. See URL
+`https://qpdf.readthedocs.io/en/stable/cli.html'. The strings
+should contain exactly what one would enter in the command line, e.g.
+'--flatten-annotations=screen'. Exceptions are strings starting with
+'--pages=', '--infile=', '--outfile=', and '--custom=', which are modified to
+fit the qpdf signature."
   (interactive (list (transient-args transient-current-command)))
-  (let ((infile (transient-arg-value "--infile=" args))
-	(pages (transient-arg-value "--pages=" args))
-	(replace-input (transient-arg-value "--replace-input" args))
+  (print args)
+  (let ((pages (transient-arg-value "--pages=" args))
+	(infile (transient-arg-value "--infile=" args))
 	(outfile (transient-arg-value "--outfile=" args))
+	(replace-input (transient-arg-value "--replace-input" args))
 	options)
     (unless (or outfile replace-input)
       (error "Must specify either outfile or --replace-input."))
