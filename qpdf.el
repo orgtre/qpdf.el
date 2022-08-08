@@ -32,6 +32,12 @@ Example page-ranges: '1,6-10,4,2,30-20,r3-z', '1-9:even', '1,4,5:odd'.\n"
   :group 'qpdf.el
   :type 'string)
 
+(defcustom qpdf-set-defaults-function 'qpdf--default-set-defaults-function
+  "Function used to set the defaults of `qpdf'.
+Should take no arguments and return a list of key-value strings."
+  :group 'qpdf.el
+  :type 'symbol)
+
 (defcustom qpdf-read-pages-function 'qpdf--default-read-pages-function
   "Function used to read the `--pages=' argument.
 Should take three arguments: prompt initial-input history and output a string."
@@ -55,7 +61,7 @@ Each should take one argument, the transient-args passed down from `qpdf'."
   "Transient dispatcher for the qpdf shell command.
 See URL `https://qpdf.readthedocs.io/en/stable/cli.html#page-selection'
 for details on the --pages argument and others."  
-  :init-value 'qpdf--defaults
+  :init-value 'qpdf--set-defaults
   :transient-non-suffix 'transient--do-stay
   :incompatible '(("--replace-input" "--outfile="))
   ["Arguments"
@@ -73,22 +79,26 @@ for details on the --pages argument and others."
 
 
 ;;;###autoload
-(defun qpdf--defaults (obj)
+(defun qpdf--set-defaults (obj)
   "Set dynamic initial values for `qpdf'."
-  (oset obj value `(,(if (equal major-mode 'pdf-view-mode)
-			 (concat "--pages="				 
-				 (concat ". " (number-to-string
-					       (image-mode-window-get 'page))
-					 " --")
-			       nil))
-		    ,(concat "--infile="
-			     (if (equal major-mode 'pdf-view-mode)
-				 (pdf-view-buffer-file-name)
-			       "--empty"))
-		    ,(concat "--outfile="
-			     (qpdf--make-unique-filename
-			      (file-truename qpdf-default-outfile))))))
+  (oset obj value (funcall qpdf-set-defaults-function)))
 
+
+(defun qpdf--default-set-defaults-function ()
+  `(,(if (equal major-mode 'pdf-view-mode)
+	 (concat "--pages="				 
+		 (concat ". " (number-to-string
+			       (image-mode-window-get 'page))
+			 " --")
+		 nil))
+    ,(concat "--infile="
+	     (if (equal major-mode 'pdf-view-mode)
+		 (pdf-view-buffer-file-name)
+	       "--empty"))
+    ,(concat "--outfile="
+	     (qpdf--make-unique-filename
+	      (file-truename qpdf-default-outfile)))))
+  
 
 (transient-define-argument qpdf--flatten-annotations ()
   "Set up the --flatten-annotations argument as a switch."
