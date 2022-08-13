@@ -4,7 +4,16 @@ A [[https://github.com/magit/transient][transient]] Emacs wrapper for [[https://
 
 To use it you hence need Emacs, transient, and qpdf. Linux and Windows binaries for qpdf are available [[https://github.com/qpdf/qpdf/releases][here]]; a homebrew formula for macOS is [[https://formulae.brew.sh/formula/qpdf][here]] (=brew install qpdf=).
 
-Optionally, when [[https://github.com/vedang/pdf-tools][pdf-tools]] is installed and the command =qpdf= is invoked from a buffer in pdf-view-mode, the default infile is set to the current file, presets for pages are shown based on the current page, and the outfile is opened in a buffer in pdf-view-mode.
+qpdf.el provides the Emacs command =qpdf=, which brings up a transient menu through which options in a call to the powerful qpdf shell command can be quickly specified.
+
+Examples of what is possible:
+- Through the =--pages= option, pages from one pdf-file can be flexibly removed or reordered, and pages from several different pdf-files can be merged in any order.
+- The =--flatten-annotations= option gives control over which annotations are visible in the output.
+- Any command-line options not specifically exposed through qpdf.el can be entered via the =--custom= option (this is especially useful when combined with a completion framework and command-specific completion history). 
+
+When the command =qpdf= is invoked from a buffer in =doc-view-mode= or [[https://github.com/vedang/pdf-tools][pdf-tools]]' =pdf-view-mode=, the default infile is set to the current file, the default outfile is set based on the current file, presets for pages are shown based on the current page, and the outfile is opened in Emacs. Several customization options exists.
+
+The command =qpdf= passes the arguments it receives through the transient menu on to the command =qpdf-run=. By passing suitable arguments directly to =qpdf-run=, even more convenient custom commands to for example delete the current page, rotate the current page, en/decrypt a file, etc. can quickly be created.
 
 To install and setup with [[https://github.com/radian-software/straight.el][straight.el]] the following can be used:
 #+begin_src elisp

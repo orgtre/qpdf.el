@@ -91,20 +91,23 @@ for details on the --pages argument and others."
 
 
 (defun qpdf--default-set-defaults-function ()
-  `(,(if (equal major-mode 'pdf-view-mode)
+  `(,(if (or (equal major-mode 'doc-view-mode)
+	     (equal major-mode 'pdf-view-mode))
 	 (concat "--pages="				 
 		 (concat ". " (number-to-string
 			       (image-mode-window-get 'page))
 			 " --")
 		 nil))
     ,(concat "--infile="
-	     (if (equal major-mode 'pdf-view-mode)
-		 (pdf-view-buffer-file-name)
-	       "--empty"))
+	     (cond ((equal major-mode 'doc-view-mode)
+		    (buffer-file-name))
+		   ((equal major-mode 'pdf-view-mode)
+		    (pdf-view-buffer-file-name))
+		   (t "--empty")))
     ,(concat "--outfile="
 	     (qpdf--make-unique-filename
 	      (file-truename qpdf-default-outfile)))))
-  
+
 
 (transient-define-argument qpdf--flatten-annotations ()
   "Set up the --flatten-annotations argument as a switch."
@@ -158,15 +161,16 @@ fit the qpdf signature."
 Argument `args' contains the transient-args passed down from `qpdf'."
   (let ((replace-input (transient-arg-value "--replace-input" args))
 	(outfile (transient-arg-value "--outfile=" args)))
-    (when (equal major-mode 'pdf-view-mode)
-	(if replace-input
-	    (revert-buffer t t)
-	  (if (not (file-exists-p outfile))
-	      (error "Cannot find outfile.")
-	    (let ((dark pdf-view-midnight-minor-mode))
-	      (find-file outfile)
-	      (when dark
-		(pdf-view-midnight-minor-mode))))))))
+    (when (or (equal major-mode 'doc-view-mode)
+	      (equal major-mode 'pdf-view-mode))
+      (if replace-input
+	  (revert-buffer t t)
+	(if (not (file-exists-p outfile))
+	    (error "Cannot find outfile.")
+	  (let ((dark (bound-and-true-p pdf-view-midnight-minor-mode)))
+	    (find-file outfile)
+	    (when dark
+	      (pdf-view-midnight-minor-mode))))))))
 
 
 (defun qpdf-docs (&optional args)
@@ -182,7 +186,8 @@ Argument `args' contains the transient-args passed down from `qpdf'."
 
 (defun qpdf--default-read-pages-function (prompt initial-input history)
   "Read a page range conditionally providing presets."
-  (if (equal major-mode 'pdf-view-mode)
+  (if (or (equal major-mode 'doc-view-mode)
+	  (equal major-mode 'pdf-view-mode))
       (qpdf--read-pages-with-presets prompt initial-input history)
     (qpdf--read-pages-without-presets prompt initial-input history)))
 
@@ -204,6 +209,14 @@ Argument `args' contains the transient-args passed down from `qpdf'."
 (defun qpdf--read-pages-with-presets (prompt initial-input history)
   "Read a page range while providing some presets based on current page."
   (let* ((current-page (image-mode-window-get 'page))
+	 (final-page (cond ((equal major-mode 'doc-view-mode)
+			    (doc-view-last-page-number))
+			   ((equal major-mode 'pdf-view-mode)
+			    (pdf-info-number-of-pages))
+			   (t (error
+			       (concat "`qpdf--read-pages-with-presets' can "
+				       "only be run when in doc-view-mode or"
+				       " pdf-view-mode.")))))
 	 (options `((?f "from current" from-current)
 		    (?u "until current" until-current)
 		    (?e "except current" except-current)
@@ -221,7 +234,7 @@ Argument `args' contains the transient-args passed down from `qpdf'."
 		      ((equal choice 'until-current)
 		       (concat ". 1-" (number-to-string current-page) " --"))
 		      ((equal choice 'except-current)
-		       (cond ((equal current-page (pdf-info-number-of-pages))
+		       (cond ((equal current-page final-page)
 			      ". 1-r2 --")
 			     ((equal current-page 1) ". 2-z --")
 			     (t (concat ". 1-"
