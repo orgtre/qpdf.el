@@ -1,8 +1,20 @@
 * qpdf.el
 
-A [[https://github.com/magit/transient][transient]] Emacs wrapper for [[https://github.com/qpdf/qpdf][qpdf]].
+** Installation
+
+qpdf.el is a [[https://github.com/magit/transient][transient]] Emacs wrapper for [[https://github.com/qpdf/qpdf][qpdf]]. 
 
 To use it you hence need Emacs, transient, and qpdf. Linux and Windows binaries for qpdf are available [[https://github.com/qpdf/qpdf/releases][here]]; a homebrew formula for macOS is [[https://formulae.brew.sh/formula/qpdf][here]] (=brew install qpdf=).
+
+To install qpdf.el itself and set it up with [[https://github.com/radian-software/straight.el][straight.el]] the following can be used:
+#+begin_src elisp
+(use-package qpdf.el
+  :straight (:host github :repo "orgtre/qpdf.el")
+  :commands qpdf)
+#+end_src
+
+
+** Features
 
 qpdf.el provides the Emacs command =qpdf=, which brings up a transient menu through which options in a call to the powerful qpdf shell command can be quickly specified.
 
@@ -11,13 +23,24 @@ Examples of what is possible:
 - The =--flatten-annotations= option gives control over which annotations are visible in the output.
 - Any command-line options not specifically exposed through qpdf.el can be entered via the =--custom= option (this is especially useful when combined with a completion framework and command-specific completion history). 
 
-When the command =qpdf= is invoked from a buffer in =doc-view-mode= or [[https://github.com/vedang/pdf-tools][pdf-tools]]' =pdf-view-mode=, the default infile is set to the current file, the default outfile is set based on the current file, presets for pages are shown based on the current page, and the outfile is opened in Emacs. Several customization options exists.
+When the command =qpdf= is invoked from a buffer in =doc-view-mode= or [[https://github.com/vedang/pdf-tools][pdf-tools]]' =pdf-view-mode=, the default infile is set to the current file, the default outfile is set based on the current file, presets for pages are shown based on the current page, and the outfile is opened in Emacs.
+
+
+** Customization
+
+Flexible customization options exist (see the source code or customization group qpdf.el). For example, to edit key bindings, control which commands are shown in the transient, and even add new ones, =qpdf-prefix-groups= can be customized or overwritten.
+
+It is also possible to make use of transients built-in customization options. When the =qpdf= transient is active, ~C-x l~ (=transient-set-level=) can be used to set the level of each infix/suffix command (by defaults only those with level 4 or greater are shown). See [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html][this section]] of the transient manual for more. 
+
+Transient also provides several functions to [[https://magit.vc/manual/transient/Modifying-Existing-Transients.html][modify existing transients non-interactively]]. For example =(transient-insert-suffix 'qpdf "c" '("l" "" "--linearize"))= inserts the --linearize option before the --custom option, and the following inserts a group of "Transformation" options after the second group in the =qpdf= transient and hides this group unless "t" is pressed: 
+#+begin_src elisp
+(transient-append-suffix 'qpdf '(1)
+  ["Transformation"
+   :hide (lambda ()
+           (not (eq (car transient--redisplay-key)
+                    ?t)))
+   ("t l" "" "--linearize")
+   ("t r" "" "--remove-unreferenced-resources")])
+#+end_src
 
 The command =qpdf= passes the arguments it receives through the transient menu on to the command =qpdf-run=. By passing suitable arguments directly to =qpdf-run=, even more convenient custom commands to for example delete the current page, rotate the current page, en/decrypt a file, etc. can quickly be created.
-
-To install and setup with [[https://github.com/radian-software/straight.el][straight.el]] the following can be used:
-#+begin_src elisp
-(use-package qpdf.el
-  :straight (:host github :repo "orgtre/qpdf.el")
-  :commands qpdf)
-#+end_src
