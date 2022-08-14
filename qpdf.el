@@ -64,20 +64,43 @@ Each should take one argument, the transient-args passed down from `qpdf'."
 
 (defcustom qpdf-prefix-groups
   (list
-   ["Arguments"
+   ["General"
     ("p" "pages" "--pages=" qpdf--read-pages)
     ("i" "infile" "--infile=" qpdf--read-file)
     ("o" "outfile" "--outfile=" qpdf--read-file)
     ("r" "replace input" "--replace-input")
     (qpdf--flatten-annotations)
+    ("d" "password" "--password=" :level 5)
     ("c" "custom" "--custom=" qpdf--read-custom)]
+   ["Modification"
+    :hide (lambda ()
+            (not (eq (car transient--redisplay-key)
+                     ?m)))
+    ("m c" "" "--collate="
+     (lambda (prompt initial-input history)
+       (read-string (concat "Collate pages in groups of: ")
+		    initial-input history)))
+    ("m r" "" "--rotate="
+     (lambda (prompt initial-input history)
+       (read-string (concat "Syntax: [+|-]angle[:page-range]\n" prompt)
+		    initial-input history)))
+    ("m s" "" "--split-pages="
+     (lambda (prompt initial-input history)
+       (read-string (concat "Split pages into groups of: ")
+		    initial-input history)))]
    [["Actions"
      ("<return>" " qpdf-run" qpdf-run)]
     [""
      ("h" "qpdf-docs" qpdf-docs :transient t)]])
-  "List of vectors as expected for the GROUPs in `transient-define-prefix`."
+  "List of vectors as expected for the GROUPs in `transient-define-prefix`.
+
+GROUPs add key bindings for infix and suffix commands and specify
+how these bindings are presented in the popup buffer.  At least
+one GROUP has to be specified.  See info node `(transient)Binding
+Suffix and Infix Commands'."
   :group 'qpdf.el
   :type 'list)
+
 
 
 ;;;###autoload
