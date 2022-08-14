@@ -30,9 +30,9 @@ When the command =qpdf= is invoked from a buffer in =doc-view-mode= or [[https:/
 
 Flexible customization options exist (see the source code or customization group qpdf.el). For example, to edit key bindings, control which commands are shown in the transient, and even add new ones, =qpdf-prefix-groups= can be customized or overwritten.
 
-It is also possible to make use of transients built-in customization options. When the =qpdf= transient is active, ~C-x l~ (=transient-set-level=) can be used to set the level of each infix/suffix command (by defaults only those with level 4 or greater are shown). See [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html][this section]] of the transient manual for more. 
+It is also possible to make use of transients built-in customization options. When the =qpdf= transient is active, ~C-x l~ (=transient-set-level=) can be used to set the level of each infix/suffix command (by default only those with level 4 or greater are shown). See [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html][this section]] of the transient manual for more. 
 
-Transient also provides several functions to [[https://magit.vc/manual/transient/Modifying-Existing-Transients.html][modify existing transients non-interactively]]. For example =(transient-insert-suffix 'qpdf "c" '("l" "" "--linearize"))= inserts the --linearize option before the --custom option, and the following inserts a group of "Transformation" options after the second group in the =qpdf= transient and hides this group unless "t" is pressed: 
+Transient also provides several functions to [[https://magit.vc/manual/transient/Modifying-Existing-Transients.html][modify existing transients non-interactively]]. For example =(transient-insert-suffix 'qpdf "c" '("l" "" "--linearize"))= inserts the --linearize option before the --custom option, and the following inserts a group of "Transformation" options after the second group in the =qpdf= transient and hides this group unless ~t~ is pressed:
 #+begin_src elisp
 (transient-append-suffix 'qpdf '(1)
   ["Transformation"
