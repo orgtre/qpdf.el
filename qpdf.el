@@ -62,6 +62,23 @@ Each should take one argument, the transient-args passed down from `qpdf'."
   :group 'qpdf.el
   :type 'string)
 
+(defcustom qpdf-prefix-groups
+  (list
+   ["Arguments"
+    ("p" "pages" "--pages=" qpdf--read-pages)
+    ("i" "infile" "--infile=" qpdf--read-file)
+    ("o" "outfile" "--outfile=" qpdf--read-file)
+    ("r" "replace input" "--replace-input")
+    (qpdf--flatten-annotations)
+    ("c" "custom" "--custom=" qpdf--read-custom)]
+   [["Actions"
+     ("<return>" " qpdf-run" qpdf-run)]
+    [""
+     ("h" "qpdf-docs" qpdf-docs :transient t)]])
+  "List of vectors as expected for the GROUPs in `transient-define-prefix`."
+  :group 'qpdf.el
+  :type 'list)
+
 
 ;;;###autoload
 (transient-define-prefix qpdf ()
@@ -71,17 +88,7 @@ for details on the --pages argument and others."
   :init-value 'qpdf--set-defaults
   :transient-non-suffix 'qpdf-transient-non-suffix
   :incompatible '(("--replace-input" "--outfile="))
-  ["Arguments"
-   ("p" "pages" "--pages=" qpdf--read-pages)
-   ("i" "infile" "--infile=" qpdf--read-file)
-   ("o" "outfile" "--outfile=" qpdf--read-file)
-   ("r" "replace input" "--replace-input")
-   (qpdf--flatten-annotations)
-   ("c" "custom" "--custom=" qpdf--read-custom)]
-  [["Actions"
-    ("<return>" " qpdf-run" qpdf-run)]
-   [""
-    ("h" "qpdf-docs" qpdf-docs :transient t)]])
+  qpdf-prefix-groups)
 
 
 ;;;###autoload
