@@ -14,7 +14,7 @@
   :group 'multimedia)
 
 (defcustom qpdf-transient-non-suffix 'transient--do-stay
-  "Function which controls behavior when keys not part of transient are presed.
+  "Function which controls behavior when pressing keys not part of transient.
 With `transient--do-stay' run the bound commands while persisting the
 transient. Set to nil to do nothing but show a message."
   :group 'qpdf.el
@@ -61,6 +61,13 @@ Each should take one argument, the transient-args passed down from `qpdf'."
   "Name for the default outfile."
   :group 'qpdf.el
   :type 'string)
+
+(defcustom qpdf-open-output-file t
+  "If non-nil open the output file produced by the qpdf shell command in Emacs.
+The output file is either the --outfile specified in the `qpdf' transient or if
+--replace-input is specified it is the specified --infile."
+  :group 'qpdf.el
+  :type 'bool)
 
 ;;;###autoload
 (defcustom qpdf-prefix-groups
@@ -196,17 +203,22 @@ fit the qpdf signature."
   "Default function to call after the `qpdf' shell command has been run.
 Argument `args' contains the transient-args passed down from `qpdf'."
   (let ((replace-input (transient-arg-value "--replace-input" args))
-	(outfile (transient-arg-value "--outfile=" args)))
-    (when (or (equal major-mode 'doc-view-mode)
-	      (equal major-mode 'pdf-view-mode))
-      (if replace-input
-	  (revert-buffer t t)
-	(if (not (file-exists-p outfile))
-	    (error "Cannot find outfile.")
-	  (let ((dark (bound-and-true-p pdf-view-midnight-minor-mode)))
-	    (find-file outfile)
-	    (when dark
-	      (pdf-view-midnight-minor-mode))))))))
+	(outfile (transient-arg-value "--outfile=" args))
+	(infile (transient-arg-value "--infile=" args)))
+    (when (or (and outfile (not (file-exists-p outfile)))
+	      (and replace-input (not (file-exists-p infile))))
+      (error "Cannot find qpdf output file."))
+    (if (and (or (equal major-mode 'doc-view-mode)
+		   (equal major-mode 'pdf-view-mode))
+	       replace-input)
+	(revert-buffer t t)
+      (when qpdf-open-output-file
+	(when replace-input
+	  (setq outfile infile))
+	(let ((dark (bound-and-true-p pdf-view-midnight-minor-mode)))
+	  (find-file outfile)
+	  (when dark
+	    (pdf-view-midnight-minor-mode)))))))
 
 
 (defun qpdf-docs (&optional args)

@@ -19,7 +19,7 @@ To install qpdf.el itself and set it up with [[https://github.com/radian-softwar
 qpdf.el provides the Emacs command =qpdf=, which brings up a transient menu through which arguments in a call to the powerful qpdf shell command can be quickly specified.
 
 Examples of what is possible:
-- Through the =--pages= argument, pages from one pdf-file can be flexibly removed or reordered, and pages from several different pdf-files can be merged in any order.
+- Through the =--pages= argument, pages from one pdf file can be flexibly removed or reordered, and pages from several different pdf files can be merged in any order.
 - The =--flatten-annotations= argument gives control over which annotations are visible in the output.
 - Any qpdf command-line arguments not specifically exposed through qpdf.el can be entered via the =--custom= argument. Note that transient automatically saves per-argument (infix) history, so anything entered here will by default be saved. This is especially useful when combined with a completion framework.
 
@@ -30,7 +30,7 @@ When the command =qpdf= is invoked from a buffer in =doc-view-mode= or [[https:/
 
 ** Customization
 
-Flexible customization options exist (see the source code or customization group qpdf.el). For example, to change key bindings and control which commands are shown in the =qpdf= transient, =qpdf-prefix-groups= can be edited.
+Flexible customization options exist – see the source code or customization group qpdf.el. For example, to change key bindings and control which commands are shown in the =qpdf= transient, =qpdf-prefix-groups= can be edited.
 
 It is also possible to make use of transients built-in customization methods. When the =qpdf= transient is active, ~C-x l~ (=transient-set-level=) can be used to set the level of each argument/command. By default only those with level 4 or larger are shown. See [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html][this section]] of the transient manual.
 
