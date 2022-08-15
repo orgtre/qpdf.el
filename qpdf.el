@@ -6,6 +6,8 @@
 ;; Linux/Windows: https://github.com/qpdf/qpdf/releases/
 ;; MacOS: https://formulae.brew.sh/formula/qpdf
 
+;;; Code:
+
 (require 'transient)
 
 
@@ -53,7 +55,7 @@ Should take three arguments: prompt initial-input history and output a string."
 
 (defcustom qpdf-run-after-functions '(qpdf--default-run-after-function)
   "List of functions to call after the qpdf shell command has been run.
-Each should take one argument, the transient-args passed down from `qpdf'."
+Each should take one argument, the transient args passed down from `qpdf'."
   :group 'qpdf.el
   :type 'list)
 
@@ -129,14 +131,15 @@ for details on the --pages argument and others."
 
 ;;;###autoload
 (defun qpdf--set-defaults (obj)
-  "Set dynamic initial values for `qpdf'."
+  "Set dynamic initial values for object OBJ."
   (oset obj value (funcall qpdf-set-defaults-function)))
 
 
 (defun qpdf--default-set-defaults-function ()
+  "Default function used to set `qpdf' defaults."
   `(,(if (or (equal major-mode 'doc-view-mode)
 	     (equal major-mode 'pdf-view-mode))
-	 (concat "--pages="				 
+	 (concat "--pages="
 		 (concat ". " (number-to-string
 			       (image-mode-window-get 'page))
 			 " --")
@@ -179,7 +182,7 @@ fit the qpdf signature."
 	(replace-input (transient-arg-value "--replace-input" args))
 	options)
     (unless (or outfile replace-input)
-      (error "Must specify either outfile or --replace-input."))
+      (error "Must specify either outfile or --replace-input"))
     (setq options
 	  (seq-difference args (list (concat "--outfile=" outfile)
 				     (concat "--infile=" infile))))
@@ -201,13 +204,13 @@ fit the qpdf signature."
 
 (defun qpdf--default-run-after-function (args)
   "Default function to call after the `qpdf' shell command has been run.
-Argument `args' contains the transient-args passed down from `qpdf'."
+Argument ARGS contains the transient args passed down from `qpdf'."
   (let ((replace-input (transient-arg-value "--replace-input" args))
 	(outfile (transient-arg-value "--outfile=" args))
 	(infile (transient-arg-value "--infile=" args)))
     (when (or (and outfile (not (file-exists-p outfile)))
 	      (and replace-input (not (file-exists-p infile))))
-      (error "Cannot find qpdf output file."))
+      (error "Cannot find qpdf output file"))
     (if (and (or (equal major-mode 'doc-view-mode)
 		   (equal major-mode 'pdf-view-mode))
 	       replace-input)
@@ -272,11 +275,11 @@ Optionally, CHOICE can already pre-specify the preset option to choose."
 		   (?e "except current" except-current)
 		   (?c "custom" custom)))
 	choice-char pages)
-    (unless choice 
-      (setq choice-char             
-	    (read-char-choice 
+    (unless choice
+      (setq choice-char
+	    (read-char-choice
 	     (mapconcat
-	      (lambda (item) (format "%c: %s" (car item) (cadr item))) 
+	      (lambda (item) (format "%c: %s" (car item) (cadr item)))
 	      options "; ")
 	     (mapcar #'car options)))
       (setq choice (nth 2 (assoc choice-char options))))
@@ -291,7 +294,7 @@ Optionally, CHOICE can already pre-specify the preset option to choose."
 			     ((equal current-page 1) ". 2-z --")
 			     (t (concat ". 1-"
 					(number-to-string (- current-page 1))
-					"," 
+					","
 					(number-to-string (+ current-page 1))
 					"-z --"))))
 		      ((equal choice 'custom)
@@ -321,12 +324,12 @@ Optionally, CHOICE can already pre-specify the preset option to choose."
 
 
 (defun qpdf--make-unique-filename (filename)
-  "Increment `filename' until it is unique."
+  "Increment FILENAME until it is unique."
   (let ((extension (file-name-extension filename))
 	(num 1)
 	new-filename)
     (if (file-exists-p filename)
-	(progn 
+	(progn
 	  (setq new-filename
 		(concat (file-name-sans-extension filename)
 			"-" (number-to-string num)))
