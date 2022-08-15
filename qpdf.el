@@ -62,6 +62,7 @@ Each should take one argument, the transient-args passed down from `qpdf'."
   :group 'qpdf.el
   :type 'string)
 
+;;;###autoload
 (defcustom qpdf-prefix-groups
   (list
    ["General"
@@ -94,13 +95,18 @@ Each should take one argument, the transient-args passed down from `qpdf'."
      ("h" "qpdf-docs" qpdf-docs :transient t)]])
   "List of vectors as expected for the GROUPs in `transient-define-prefix`.
 
-GROUPs add key bindings for infix and suffix commands and specify
-how these bindings are presented in the popup buffer.  At least
-one GROUP has to be specified.  See info node `(transient)Binding
-Suffix and Infix Commands'."
+GROUPs add key bindings for infix and suffix commands and specify how these
+bindings are presented in the popup buffer of the `qpdf' command. At least
+one GROUP has to be specified. See info node `(transient)Binding Suffix and
+Infix Commands'."
   :group 'qpdf.el
   :type 'list)
 
+;;;###autoload
+(defcustom qpdf-incompatible '(("--replace-input" "--outfile="))
+  "List of incompatible options in the `qpdf' transient."
+  :group 'qpdf.el
+  :type 'list)
 
 
 ;;;###autoload
@@ -110,7 +116,7 @@ See URL `https://qpdf.readthedocs.io/en/stable/cli.html#page-selection'
 for details on the --pages argument and others."
   :init-value 'qpdf--set-defaults
   :transient-non-suffix 'qpdf-transient-non-suffix
-  :incompatible '(("--replace-input" "--outfile="))
+  :incompatible qpdf-incompatible
   qpdf-prefix-groups)
 
 
