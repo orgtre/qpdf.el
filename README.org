@@ -2,9 +2,9 @@
 
 ** Installation
 
-qpdf.el is a [[https://github.com/magit/transient][transient]] Emacs wrapper for [[https://github.com/qpdf/qpdf][qpdf]]. 
+qpdf.el is a [[https://github.com/magit/transient][transient]] [[https://www.gnu.org/savannah-checkouts/gnu/emacs/emacs.html][Emacs]] wrapper for [[https://github.com/qpdf/qpdf][qpdf]]. 
 
-To use it you hence need Emacs, transient, and qpdf. Linux and Windows binaries for qpdf are available [[https://github.com/qpdf/qpdf/releases][here]]; a homebrew formula for macOS is [[https://formulae.brew.sh/formula/qpdf][here]] (=brew install qpdf=).
+To use it you hence need Emacs, transient, and qpdf. Transient may be installed from [[https://elpa.gnu.org/packages/transient.html][ELPA]] or its Github repo, but you likely already have it as it comes as a [[https://magit.vc][Magit]] dependency. Linux and Windows binaries for qpdf are available [[https://github.com/qpdf/qpdf/releases][here]]; a homebrew formula for macOS is [[https://formulae.brew.sh/formula/qpdf][here]].
 
 To install qpdf.el itself and set it up with [[https://github.com/radian-software/straight.el][straight.el]] the following can be used:
 #+begin_src elisp
@@ -16,25 +16,25 @@ To install qpdf.el itself and set it up with [[https://github.com/radian-softwar
 
 ** Features
 
-qpdf.el provides the Emacs command =qpdf=, which brings up a transient menu through which options in a call to the powerful qpdf shell command can be quickly specified.
+qpdf.el provides the Emacs command =qpdf=, which brings up a transient menu through which arguments in a call to the powerful qpdf shell command can be quickly specified.
 
 Examples of what is possible:
-- Through the =--pages= option, pages from one pdf-file can be flexibly removed or reordered, and pages from several different pdf-files can be merged in any order.
-- The =--flatten-annotations= option gives control over which annotations are visible in the output.
-- Any command-line options not specifically exposed through qpdf.el can be entered via the =--custom= option. This is especially useful when combined with a completion framework and command-specific completion history.
+- Through the =--pages= argument, pages from one pdf-file can be flexibly removed or reordered, and pages from several different pdf-files can be merged in any order.
+- The =--flatten-annotations= argument gives control over which annotations are visible in the output.
+- Any qpdf command-line arguments not specifically exposed through qpdf.el can be entered via the =--custom= argument. Note that transient automatically saves per-argument (infix) history, so anything entered here will by default be saved. This is especially useful when combined with a completion framework.
 
-See the [[https://qpdf.readthedocs.io/en/stable/cli.html][qpdf documentation]], which can be shown by using the =qpdf-docs= command, for a list of all available options and syntax details.
+See the [[https://qpdf.readthedocs.io/en/stable/cli.html][qpdf documentation]], which can be shown by using the =qpdf-docs= command, for a list of all available arguments and syntax details.
 
 When the command =qpdf= is invoked from a buffer in =doc-view-mode= or [[https://github.com/vedang/pdf-tools][pdf-tools]]' =pdf-view-mode=, the default infile is set to the current file, the default outfile is set based on the current file, presets for pages are shown based on the current page, and the outfile is opened in Emacs.
 
 
 ** Customization
 
-Flexible customization options exist (see the source code or customization group qpdf.el). For example, to edit key bindings, control which commands are shown in the transient, and even add new ones, =qpdf-prefix-groups= can be customized or overwritten.
+Flexible customization options exist (see the source code or customization group qpdf.el). For example, to change key bindings and control which commands are shown in the =qpdf= transient, =qpdf-prefix-groups= can be edited.
 
-It is also possible to make use of transients built-in customization options. When the =qpdf= transient is active, ~C-x l~ (=transient-set-level=) can be used to set the level of each infix/suffix command (by default only those with level 4 or greater are shown). See [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html][this section]] of the transient manual for more. 
+It is also possible to make use of transients built-in customization methods. When the =qpdf= transient is active, ~C-x l~ (=transient-set-level=) can be used to set the level of each argument/command. By default only those with level 4 or larger are shown. See [[https://magit.vc/manual/transient/Enabling-and-Disabling-Suffixes.html][this section]] of the transient manual.
 
-Transient also provides several functions to [[https://magit.vc/manual/transient/Modifying-Existing-Transients.html][modify existing transients non-interactively]]. For example =(transient-insert-suffix 'qpdf "c" '("l" "" "--linearize"))= inserts the --linearize option before the --custom option, and the following inserts a group of "Transformation" options after the second group in the =qpdf= transient and hides this group unless ~t~ is pressed:
+Transient also provides several functions to [[https://magit.vc/manual/transient/Modifying-Existing-Transients.html][modify existing transients non-interactively]]. For example, =(transient-insert-suffix 'qpdf "c" '("l" "" "--linearize"))= inserts the =--linearize= argument before the =--custom= argument, while the following inserts a group of "Transformation" options after the second group in the =qpdf= transient and hides this group unless ~t~ is pressed:
 #+begin_src elisp
 (transient-append-suffix 'qpdf '(1)
   ["Transformation"
