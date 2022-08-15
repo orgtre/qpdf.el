@@ -45,4 +45,19 @@ Transient also provides several functions to [[https://magit.vc/manual/transient
    ("t r" "" "--remove-unreferenced-resources")])
 #+end_src
 
-The command =qpdf= passes the arguments it receives through the transient menu on to the command =qpdf-run=. By passing suitable arguments directly to =qpdf-run=, even more convenient custom commands to for example delete the current page, rotate the current page, en/decrypt a file, etc. can quickly be created. See the docstring of =qpdf-run=.
+The command =qpdf= passes the arguments it receives through the transient menu on to the command =qpdf-run=. By passing suitable arguments directly to =qpdf-run=, even more convenient custom commands to for example delete the current page, rotate the current page, en/decrypt a file, etc. can quickly be created. See the docstring of =qpdf-run=. An example is:
+#+begin_src elisp
+(defun qpdf-delete-current-page ()
+  "Delete the current page of pdf file."
+  (interactive)
+  (unless (or (equal major-mode 'doc-view-mode)
+	      (equal major-mode 'pdf-view-mode))
+    (error "Buffer should visit a pdf file in doc-view-mode or pdf-view-mode."))
+  (qpdf-run (list
+	     (concat "--pages="
+		     (qpdf--read-pages-with-presets nil nil nil
+						    'except-current))
+	     (concat "--infile="
+		     (buffer-file-name))
+	     "--replace-input")))
+#+end_src

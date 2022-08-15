@@ -242,29 +242,33 @@ Argument `args' contains the transient-args passed down from `qpdf'."
     instring))
 
 
-(defun qpdf--read-pages-with-presets (prompt initial-input history)
-  "Read a page range while providing some presets based on current page."
-  (let* ((current-page (image-mode-window-get 'page))
-	 (final-page (cond ((equal major-mode 'doc-view-mode)
-			    (doc-view-last-page-number))
-			   ((equal major-mode 'pdf-view-mode)
-			    (pdf-info-number-of-pages))
-			   (t (error
-			       (concat "`qpdf--read-pages-with-presets' can "
-				       "only be run when in doc-view-mode or"
-				       " pdf-view-mode.")))))
-	 (options `((?f "from current" from-current)
-		    (?u "until current" until-current)
-		    (?e "except current" except-current)
-		    (?c "custom" custom)))
-	 (choice-char             
-	  (read-char-choice 
-	   (mapconcat
-	    (lambda (item) (format "%c: %s" (car item) (cadr item))) 
-	    options "; ")
-	   (mapcar #'car options)))
-	 (choice (nth 2 (assoc choice-char options)))
-	 (pages (cond ((equal choice 'from-current)
+(defun qpdf--read-pages-with-presets (prompt initial-input history
+					     &optional choice)
+  "Read a page range while providing some presets based on current page.
+Optionally, CHOICE can already pre-specify the preset option to choose."
+  (let ((current-page (image-mode-window-get 'page))
+	(final-page (cond ((equal major-mode 'doc-view-mode)
+			   (doc-view-last-page-number))
+			  ((equal major-mode 'pdf-view-mode)
+			   (pdf-info-number-of-pages))
+			  (t (error
+			      (concat "`qpdf--read-pages-with-presets' can "
+				      "only be run when in doc-view-mode or"
+				      " pdf-view-mode.")))))
+	(options `((?f "from current" from-current)
+		   (?u "until current" until-current)
+		   (?e "except current" except-current)
+		   (?c "custom" custom)))
+	choice-char pages)
+    (unless choice 
+      (setq choice-char             
+	    (read-char-choice 
+	     (mapconcat
+	      (lambda (item) (format "%c: %s" (car item) (cadr item))) 
+	      options "; ")
+	     (mapcar #'car options)))
+      (setq choice (nth 2 (assoc choice-char options))))
+    (setq pages (cond ((equal choice 'from-current)
 		       (concat ". " (number-to-string current-page)
 			       "-z" " --"))
 		      ((equal choice 'until-current)
@@ -282,13 +286,13 @@ Argument `args' contains the transient-args passed down from `qpdf'."
 		       ;; allow omitting ". " and " --"
 		       (let ((instring (read-string
 					(concat qpdf-pages-prepromt prompt)
-						    initial-input history)))
+					initial-input history)))
 			 (unless (string-match-p
 				  "^\\(\\.\\|.*[\\.pdf]\\)" instring)
 			   (setq instring (concat ". " instring)))
 			 (unless (string-match-p " --$" instring)
 			   (setq instring (concat instring " --")))
-			 instring)))))
+			 instring))))
     (message "")
     pages))
 
