@@ -118,7 +118,7 @@ Infix Commands'."
   :type 'list)
 
 
-;;;###autoload
+;;;###autoload (autoload 'qpdf "qpdf.el" "" t)
 (transient-define-prefix qpdf ()
   "Transient dispatcher for the qpdf shell command.
 See URL `https://qpdf.readthedocs.io/en/stable/cli.html#page-selection'
