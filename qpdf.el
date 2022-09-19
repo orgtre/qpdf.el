@@ -59,6 +59,11 @@ Each should take one argument, the transient args passed down from `qpdf'."
   :group 'qpdf.el
   :type 'list)
 
+(defcustom qpdf-display-call t
+  "If non-nil, display a message with the qpdf call."
+  :group 'qpdf.el
+  :type 'bool)
+
 (defcustom qpdf-default-outfile "qpdf-outfile.pdf"
   "Name for the default outfile."
   :group 'qpdf.el
@@ -186,7 +191,7 @@ fit the qpdf signature."
     (setq options
 	  (seq-difference args (list (concat "--outfile=" outfile)
 				     (concat "--infile=" infile))))
-    (let ((call (concat "qpdf" " " infile " "
+    (let ((call (concat "qpdf" " '" infile "' "
 			(mapconcat
 			 (lambda (x)
 			   (replace-regexp-in-string
@@ -195,8 +200,9 @@ fit the qpdf signature."
 			     "^--pages=" "--pages " x)))
 			 options
 			 " ")
-			" " outfile)))
-      (message "call: %s" call)
+			" '" outfile "'")))
+      (when qpdf-display-call
+	(message "call: %s" call))
       (call-process-shell-command call))
     (mapcar (lambda (f) (funcall f args))
 	    qpdf-run-after-functions)))
