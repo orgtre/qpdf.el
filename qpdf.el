@@ -21,7 +21,7 @@ With `transient--do-stay' run the bound commands while persisting the
 transient. Set to nil to do nothing but show a message."
   :group 'qpdf.el
   :type 'symbol)
-  
+
 (defcustom qpdf-docs-url "https://qpdf.readthedocs.io/en/stable/cli.html"
   "The url used by `qpdf-docs'."
   :group 'qpdf.el
@@ -200,7 +200,8 @@ fit the qpdf signature."
 			     "^--pages=" "--pages " x)))
 			 options
 			 " ")
-			" '" outfile "'")))
+			(when outfile
+              (concat " '" outfile "'")))))
       (when qpdf-display-call
 	(message "call: %s" call))
       (call-process-shell-command call))
