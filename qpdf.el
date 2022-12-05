@@ -28,7 +28,7 @@ transient. Set to nil to do nothing but show a message."
   :type 'string)
 
 (defcustom qpdf-pages-prepromt
-  "Synatax: 'file [--password=password] [page-range] [...] --'.
+  "Syntax: 'file [--password=password] [page-range] [...] --'.
 If only one file, 'file' and ' --' can also be omitted.
 Example page-ranges: '1,6-10,4,2,30-20,r3-z', '1-9:even', '1,4,5:odd'.\n"
   "Extra syntax explanations shown before the --pages custom prompt."
