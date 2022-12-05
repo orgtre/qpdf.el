@@ -20,7 +20,7 @@
 With `transient--do-stay' run the bound commands while persisting the
 transient. Set to nil to do nothing but show a message."
   :group 'qpdf.el
-  :type 'symbol)
+  :type 'function)
 
 (defcustom qpdf-docs-url "https://qpdf.readthedocs.io/en/stable/cli.html"
   "The url used by `qpdf-docs'."
@@ -45,24 +45,24 @@ Example page-ranges: '1,6-10,4,2,30-20,r3-z', '1-9:even', '1,4,5:odd'.\n"
   "Function used to set the defaults of `qpdf'.
 Should take no arguments and return a list of key-value strings."
   :group 'qpdf.el
-  :type 'symbol)
+  :type 'function)
 
 (defcustom qpdf-read-pages-function 'qpdf--default-read-pages-function
   "Function used to read the `--pages=' argument.
 Should take three arguments: prompt initial-input history and output a string."
   :group 'qpdf.el
-  :type 'symbol)
+  :type 'function)
 
 (defcustom qpdf-run-after-functions '(qpdf--default-run-after-function)
   "List of functions to call after the qpdf shell command has been run.
 Each should take one argument, the transient args passed down from `qpdf'."
   :group 'qpdf.el
-  :type 'list)
+  :type 'hook)
 
 (defcustom qpdf-display-call t
   "If non-nil, display a message with the qpdf call."
   :group 'qpdf.el
-  :type 'bool)
+  :type 'boolean)
 
 (defcustom qpdf-default-outfile "qpdf-outfile.pdf"
   "Name for the default outfile."
@@ -74,7 +74,7 @@ Each should take one argument, the transient args passed down from `qpdf'."
 The output file is either the --outfile specified in the `qpdf' transient or if
 --replace-input is specified it is the specified --infile."
   :group 'qpdf.el
-  :type 'bool)
+  :type 'boolean)
 
 ;;;###autoload
 (defcustom qpdf-prefix-groups
@@ -114,13 +114,13 @@ bindings are presented in the popup buffer of the `qpdf' command. At least
 one GROUP has to be specified. See info node `(transient)Binding Suffix and
 Infix Commands'."
   :group 'qpdf.el
-  :type 'list)
+  :type '(repeat sexp))
 
 ;;;###autoload
 (defcustom qpdf-incompatible '(("--replace-input" "--outfile="))
   "List of incompatible options in the `qpdf' transient."
   :group 'qpdf.el
-  :type 'list)
+  :type '(repeat (repeat string)))
 
 
 ;;;###autoload (autoload 'qpdf "qpdf.el" "" t)
